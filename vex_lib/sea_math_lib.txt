@@ -1,0 +1,56 @@
+matrix3 rotate_m(vector xa;vector ya;vector za;
+                 vector xb;vector yb;vector zb)
+                 {
+                    vector  rotate_m_1 ;
+                    vector  rotate_m_2 ;
+                    vector  rotate_m_3 ;
+                    
+                    matrix3 rotate_m;
+                    xa = normalize(xa);
+                    ya = normalize(ya);
+                    za = normalize(za);
+                    xb = normalize(xb);
+                    yb = normalize(yb);
+                    zb = normalize(zb);
+                    
+                    rotate_m_1.x  = dot(xb,xa);
+                    rotate_m_1.y  = dot(yb,xa);
+                    rotate_m_1.z  = dot(zb,xa);
+
+                    rotate_m_2.x  = dot(xb,ya);
+                    rotate_m_2.y  = dot(yb,ya);
+                    rotate_m_2.z  = dot(zb,ya);
+
+                    rotate_m_3.x  = dot(xb,za);
+                    rotate_m_3.y  = dot(yb,za);
+                    rotate_m_3.z  = dot(zb,za);
+                    rotate_m =set(rotate_m_1, rotate_m_2, rotate_m_3);
+                    return  rotate_m;
+                 };
+
+vector4 m3_to_axisangle(matrix3 rotate_m)
+                 {
+                    float  rotate_m_00,rotate_m_01,rotate_m_02,
+                            rotate_m_10,rotate_m_11,rotate_m_12,
+                            rotate_m_20,rotate_m_21,rotate_m_22;
+                    float  main_axis ;
+                    float angle;
+                    vector asix;
+                    
+                    vector4 axisangle;
+                    
+                    assign(rotate_m_00,rotate_m_01,rotate_m_02,
+                           rotate_m_10,rotate_m_11,rotate_m_12,
+                           rotate_m_20,rotate_m_21,rotate_m_22, rotate_m);
+                    main_axis = sqrt(pow(2,(rotate_m_21 -rotate_m_12))+pow(2,(rotate_m_02 -rotate_m_20))+pow(2,(rotate_m_10 -rotate_m_01)));       
+                    angle =  acos(( rotate_m_00 + rotate_m_11 + rotate_m_22 - 1)/2);
+                    asix.x =  (rotate_m_21 - rotate_m_12)/main_axis;
+                    asix.y =  (rotate_m_02 - rotate_m_20)/main_axis;
+                    asix.z =  (rotate_m_10 - rotate_m_01)/main_axis;
+                    
+                    axisangle.x = asix.x;
+                    axisangle.y = asix.y;
+                    axisangle.z = asix.z;
+                    axisangle.w = angle;
+                    return axisangle;
+                    };   
