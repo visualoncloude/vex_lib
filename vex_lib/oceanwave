@@ -1,0 +1,64 @@
+#include <voplib.h>
+#include <voptype.h>
+
+
+vector seawave(float k , g , r , time, chop , b ; vector wave ,pos)
+{
+    //vector pos = position;
+    vector final_wave ;
+    vector vectorxz ={1,0,0};
+    vector chopxz =  {0,0,0};
+    vectorxz.x = pos.x;
+    vectorxz.z = pos.z;    
+    //float test = pos.x;
+    //float  phase = 2*$PI*random(wave);
+    float  dot_wave_pos = dot(vectorxz,normalize(wave));
+    //float  dot_wave_pos = dot(normalize(vectorxz),normalize(wave));
+    float  inside = k*dot_wave_pos - sqrt(g*k)*time + b ;
+    float  y =r * cos(inside) ;
+    //float  xz =chop * length(wave) *sin(inside);
+    float  xz =chop *sin(inside);
+    chopxz  = wave  *xz ;
+    final_wave.x = chopxz.x;
+    final_wave.z = chopxz.z;
+    final_wave.y = -y;
+    return final_wave;
+}
+
+string file = "op:/obj/basic/low_out";
+
+vector dir = {0.0,0.0,0.0}; ;
+vector final_wave = {0.0,0.0,0.0};
+vector sea_wave = {0.0,0.0,0.0};
+int i;
+int success = 1;
+int turb = 200 ;
+vector freq2 = {.1,.1,.1};
+vector offset2 = {0,1,1};
+
+vector pos = @P;
+for( i = 1 ;i < turb; i= i +1)
+{
+
+    vector grid_vector ;
+    grid_vector.x = float(i);
+    grid_vector.z = float(turb-i);
+    float random = 100*rand(float(i));
+    float random_a = 100*rand(float(i));
+    float k = fit01(rand(float(i)),2,400.0);
+     // k = pow(k,2);
+    // k =1;
+    //dir = pointattrib(file,"Cd", i, success);
+    //dir = fit01(rand01(grid_vector),{-1.0,-1.0,-1.0},{1.0,1.0,1.0});
+    dir =  vop_curlNoiseVP(grid_vector, freq2*.3, offset2*random, { 0, 0, 0 }, "xnoise", "", 2, 1, 1, 0.27500000000000002, 1, 1, 1, 0.01);
+    //vector  off =  vop_curlNoiseVP(pos, freq2*1, offset2, { 0, 0, 0 }, "xnoise", "", 1, 1, 1, 0.27500000000000002, 1, 1, 1, 0.01);
+    //vector  amp =  vop_curlNoiseVP(pos, freq2*4, offset2, { 0, 0, 0 }, "xnoise", "",1 , 1, 1, 0.27500000000000002, 1, 1, 1, 0.01);
+    //@Cd = dir;
+    sea_wave = seawave(k, 9.8 , 2*length(dir) , @Time*.1 ,0.05 , random ,normalize(dir) , pos);
+    final_wave = final_wave +  sea_wave*pow(.92,(k)) ;
+}
+v@final_wave = final_wave;
+
+@P.y = @P.y + final_wave.y;
+@P.x = @P.x + final_wave.x;
+@P.z = @P.z + final_wave.z;
