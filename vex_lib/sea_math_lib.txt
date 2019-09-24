@@ -73,3 +73,96 @@ matrix3 get_rotate_matrix(vector vec, float angle_in_degree)
   m[2][2] = cosine + vec[2] * vec[2] * (1 - cosine);
   return m;
 }
+vector matrix3_row(matrix3 in ; int row)
+{
+	int i;	
+	vector out;
+	float temp;
+	for(i = 0 ; i<3 ; i +=  1 )
+	{
+		temp = getcomp(in,row,i);		
+		setcomp(out,temp,i);	
+	} 
+	return out;
+}
+
+
+vector matrix3_col(matrix3 in ; int col)
+{
+	int i;	
+	vector out;
+	float temp;
+	for(i = 0 ; i<3 ; i +=  1 )
+	{
+		temp = getcomp(in,i,col);		
+		setcomp(out,temp,i);	
+	} 
+	return out;
+}
+
+matrix3 computeMaterialFrame(
+        vector  p0, p1, p2;
+        )
+{
+        matrix3 frame;
+        vector frame_col2 = normalize(p1-p0);
+        vector p20 = p2 - p0 ;
+        vector frame_col1 =normalize(cross(frame_col2 , (p2 - p0)));
+        vector frame_col0 =cross(frame_col1,frame_col2);
+        
+        frame = set(frame_col0.x,frame_col1.x,frame_col2.x,
+                    frame_col0.y,frame_col1.y,frame_col2.y,
+                    frame_col0.z,frame_col1.z,frame_col2.z);
+        //frame_col2 = normalize(p1-p0);
+        //frame_col1 = cross((p2-p1),frame_col2);
+        //frame_col0 = cross(frame_col1,frame_col2);
+        frame = set(frame_col0,frame_col1,frame_col2);
+        return frame;
+}
+
+//********************************computeDarbouxVector***********************************
+
+
+vector computeDarbouxVector(matrix3 d0,d1 ; float midedgelength ; matrix3 permutation)
+{
+    vector darboux_vector ;
+    float factor  = 1.0 + dot(matrix3_col(d0,0),matrix3_col(d1,0))
+                        + dot(matrix3_col(d0,1),matrix3_col(d1,1))
+                        + dot(matrix3_col(d0,2),matrix3_col(d1,2)) ;
+    factor = 2.0 /( factor*midedgelength );
+    for (int c = 0; c < 3; ++c)
+        {
+                int i = getcomp(permutation ,c , 0);
+                int j = getcomp(permutation ,c , 1);
+                int k = getcomp(permutation ,c , 2);
+                float temp = dot(matrix3_col(d0,j),matrix3_col(d1,k)) - dot(matrix3_col(d0,k),matrix3_col(d1,j));
+                setcomp(darboux_vector,temp,i); 
+        }
+     darboux_vector *= factor;
+     return darboux_vector;
+    
+    
+}
+
+
+//******************************darbouxVectorConstraint************************************
+
+vector  darbouxVectorConstraint(vector pos_0 , pos_1, pos_2,pos_3,pos_4 ;
+                          float inv_mass_0 ,inv_mass_1,inv_mass_2,inv_mass_3,inv_mass_4;
+                          vector  bendingAndTwistingKs;
+                          float midedgelength;
+                          vector restDarbouxVector;
+                          vector corre[];
+                          matrix2 permutation)
+{
+        //  Single rod element:
+        //      3   4           //ghost points
+        //              |       |
+        //  --0---1---2--       // rod points
+        
+        matrix3 d0 ,d1;
+        d0 = computeMaterialFrame(pos_0,pos_1,pos_2);
+        d1 = computeMaterialFrame(pos_0,pos_1,pos_2);
+        //DarbouxVector = computeDarbouxVector(d0,d1,midedgelength,permutation);
+
+}
