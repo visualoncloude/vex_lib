@@ -1,0 +1,84 @@
+string file = @OpInput1;
+int handle = geoself();
+
+//int interpolate =ch("interpolate");
+int num_neis = len(i[]@neighbours);
+int i = 0;
+int nei_id ;
+int maxiter =1;
+vector     nei_pos ={0.0,0.0,0.0} ;
+
+
+vector     dir;
+
+vector    sum_force = {0,0,0};
+vector   displacement = {0,0,0};
+vector   hope_pos = {0,0,0};
+vector   sum_displacement = {0,0,0};
+vector   my_pos = v@my_pos;
+
+float nei_dist  = 0.0;
+float weight ;
+float rest_dist = f@p_radius;
+float compressionStiffness = .8;
+float stretchStiffness = .8;
+float nei_mass = 0;
+float inv_mass = 1/@mass;
+float inv_neimass = 0;
+float nei_rest = 0;
+
+int nei_num = 0;
+
+
+
+//printf("nei_id   %d\n",i@neighbourcount);
+//if(i@neighbourcount > 0 && inpointgroup(file, "body",@ptnum)==1)
+
+
+        
+        sum_displacement = {0,0,0};
+        for(nei_num = 0 ; nei_num < i@neighbourcount; nei_num= nei_num+1 )
+        {
+           
+           
+            float restlength = f[]@restlength[nei_num];
+            //printf("id   %d\n",nei_num);
+            //printf("nei_id   %d\n",i[]@neighbours[nei_num]);
+            getattribute(file, nei_pos, "point", "my_pos", i[]@neighbours[nei_num] ,0);
+            getattribute(file, nei_mass, "point", "mass", i[]@neighbours[nei_num] ,0);
+            //getattribute(file, rest_dist, "point", "restlength", nei_id ,0);
+            
+            dir =  my_pos - nei_pos ;
+            vector n_dir = normalize(dir);
+            nei_dist =  length(dir);
+            //printf("test   %d\n",nei_dist);
+            inv_neimass = 1/nei_mass;
+            float sumass = inv_neimass + inv_mass;
+            if(nei_rest - nei_dist >0)
+            {
+                displacement = -compressionStiffness*n_dir*(restlength - nei_dist)/sumass;
+            }
+            else
+            {
+                 displacement = stretchStiffness*n_dir*(restlength - nei_dist)/sumass;
+               
+            }
+        
+        
+
+            displacement = inv_mass *displacement;
+            
+            sum_displacement +=  displacement;
+            
+        }
+       
+    
+   
+    //v@sum_displacement = sum_displacement;
+    my_pos +=sum_displacement;
+
+
+v@my_pos = my_pos ;
+
+
+
