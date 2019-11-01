@@ -1,0 +1,251 @@
+
+float q_squaredNorm(vector4 q)
+{
+	float l = pow(2,q.x)+pow(2,q.y) + pow(2,q.z) + pow(2,q.a);
+}
+
+vector4 q_conjugate(vector4 q)
+{
+	q.x *= -1.0 ;
+	q.y *= -1.0 ;
+	q.z *= -1.0 ;
+
+	return q;
+}
+
+matrix3 get_matrix3_row_col(matrix3 m[]; int row ,col)
+{
+	return m[row*3+1+col]; 	
+}	
+	
+
+matrix3 matrix3_transpose(matrix3 m)
+{
+	matrix3 out ;
+	out = set(m.xx , m.yx , m.zx, 
+		  m.xy , m.yy ,	m.zy,	
+	          m.xz , m.yz , m.zz);
+	return out;
+}
+
+matrix3 crossProductMatrix(vector d )
+{
+	 matrix3 m = set(0.0,   -d.z, d.y,
+		        d.z,    0.0, -d.x,
+	               -d.y,  d.x,  0.0);
+	return m;
+}
+
+vector matrix3_row(matrix3 in ; int row)
+{
+	int i;	
+	vector out;
+	float temp;
+	for(i = 0 ; i<3 ; i +=  1 )
+	{
+		temp = getcomp(in,row,i);		
+		setcomp(out,temp,i);	
+	} 
+	return out;
+}
+
+
+vector matrix3_col(matrix3 in ; int col)
+{
+	int i;	
+	vector out;
+	float temp;
+	for(i = 0 ; i<3 ; i +=  1 )
+	{
+		temp = getcomp(in,i,col);		
+		setcomp(out,temp,i);	
+	} 
+	return out;
+}
+
+matrix3 matrix3_setcol(matrix3 m ; int col; vector v)
+{
+	int i;	
+	//matrix3 out;
+	float temp;
+	for(i = 0 ; i<3 ; i +=  1 )
+	{
+		temp = 	getcomp(v,i);
+		setcomp(m,temp,i,col);		
+
+	} 
+	return m;
+}
+
+
+
+
+matrix3 rotate_m(vector xa;vector ya;vector za;
+                 vector xb;vector yb;vector zb)
+{
+                    vector  rotate_m_1 ;
+                    vector  rotate_m_2 ;
+                    vector  rotate_m_3 ;
+                    
+                    matrix3 rotate_m;
+                    xa = normalize(xa);
+                    ya = normalize(ya);
+                    za = normalize(za);
+                    xb = normalize(xb);
+                    yb = normalize(yb);
+                    zb = normalize(zb);
+                    
+                    rotate_m_1.x  = dot(xb,xa);
+                    rotate_m_1.y  = dot(yb,xa);
+                    rotate_m_1.z  = dot(zb,xa);
+
+                    rotate_m_2.x  = dot(xb,ya);
+                    rotate_m_2.y  = dot(yb,ya);
+                    rotate_m_2.z  = dot(zb,ya);
+
+                    rotate_m_3.x  = dot(xb,za);
+                    rotate_m_3.y  = dot(yb,za);
+                    rotate_m_3.z  = dot(zb,za);
+                    rotate_m =set(rotate_m_1, rotate_m_2, rotate_m_3);
+                    return  rotate_m;
+ }
+
+
+
+/*forward vector:
+x = 2 * (x*z + w*y)
+y = 2 * (y*z - w*x)
+z = 1 - 2 * (x*x + y*y)
+
+up vector
+x = 2 * (x*y - w*z)
+y = 1 - 2 * (x*x + z*z)
+z = 2 * (y*z + w*x)
+
+left vector
+x = 1 - 2 * (y*y + z*z)
+y = 2 * (x*y + w*z)
+z = 2 * (x*z - w*y) */
+
+
+matrix3 rotate_m(vector xa;vector ya;vector za;
+                 vector xb;vector yb;vector zb)
+                 {
+                    vector  rotate_m_1 ;
+                    vector  rotate_m_2 ;
+                    vector  rotate_m_3 ;
+                    
+                    matrix3 rotate_m;
+                    xa = normalize(xa);
+                    ya = normalize(ya);
+                    za = normalize(za);
+                    xb = normalize(xb);
+                    yb = normalize(yb);
+                    zb = normalize(zb);
+                    
+                    rotate_m_1.x  = dot(xb,xa);
+                    rotate_m_1.y  = dot(yb,xa);
+                    rotate_m_1.z  = dot(zb,xa);
+
+                    rotate_m_2.x  = dot(xb,ya);
+                    rotate_m_2.y  = dot(yb,ya);
+                    rotate_m_2.z  = dot(zb,ya);
+
+                    rotate_m_3.x  = dot(xb,za);
+                    rotate_m_3.y  = dot(yb,za);
+                    rotate_m_3.z  = dot(zb,za);
+                    rotate_m =set(rotate_m_1, rotate_m_2, rotate_m_3);
+                    return  rotate_m;
+                 };
+
+vector4 m3_to_axisangle(matrix3 rotate_m)
+                 {
+                    float  rotate_m_00,rotate_m_01,rotate_m_02,
+                            rotate_m_10,rotate_m_11,rotate_m_12,
+                            rotate_m_20,rotate_m_21,rotate_m_22;
+                    float  main_axis ;
+                    float angle;
+                    vector asix;
+                    
+                    vector4 axisangle;
+                    
+                    assign(rotate_m_00,rotate_m_01,rotate_m_02,
+                           rotate_m_10,rotate_m_11,rotate_m_12,
+                           rotate_m_20,rotate_m_21,rotate_m_22, rotate_m);
+                    main_axis = sqrt(pow(2,(rotate_m_21 -rotate_m_12))+pow(2,(rotate_m_02 -rotate_m_20))+pow(2,(rotate_m_10 -rotate_m_01)));       
+                    angle =  acos(( rotate_m_00 + rotate_m_11 + rotate_m_22 - 1)/2);
+                    asix.x =  (rotate_m_21 - rotate_m_12)/main_axis;
+                    asix.y =  (rotate_m_02 - rotate_m_20)/main_axis;
+                    asix.z =  (rotate_m_10 - rotate_m_01)/main_axis;
+                    
+                    axisangle.x = asix.x;
+                    axisangle.y = asix.y;
+                    axisangle.z = asix.z;
+                    axisangle.w = angle;
+                    return axisangle;
+                    } 
+                    
+/*matrix3 get_rotate_matrix(vector vec, float angle_in_degree)
+{
+                PBDElasticRod::Mat3 m;
+                real cosine = cos(angle_in_radian);
+                real sine = sin(angle_in_radian);
+                 m[0][0] = cosine + vec[0] * vec[0] * (1 - cosine);
+  m[0][1] = vec[0] * vec[1] * (1 - cosine) - vec[2] * sine;
+  m[0][2] = vec[0] * vec[2] * (1 - cosine) + vec[1] * sine;
+
+  m[1][0] = vec[0] * vec[1] * (1 - cosine) + vec[2] * sine;
+  m[1][1] = cosine + vec[1] * vec[1] * (1 - cosine);
+  m[1][2] = vec[1] * vec[2] * (1 - cosine) - vec[0] * sine;
+
+  m[2][0] = vec[0] * vec[2] * (1 - cosine) - vec[1] * sine;
+  m[2][1] = vec[1] * vec[2] * (1 - cosine) + vec[0] * sine;
+  m[2][2] = cosine + vec[2] * vec[2] * (1 - cosine);
+  return m;
+}*/
+
+
+matrix3 computeMaterialFrame(
+        vector  p0, p1, p2;
+        )
+{
+        matrix3 frame;
+        vector frame_col2 = normalize(p1-p0);
+        vector p20 = p2 - p0 ;
+        vector frame_col1 =normalize(cross(frame_col2 , (p2 - p0)));
+        vector frame_col0 =cross(frame_col1,frame_col2);
+        
+        frame = set(frame_col0.x,frame_col1.x,frame_col2.x,
+                    frame_col0.y,frame_col1.y,frame_col2.y,
+                    frame_col0.z,frame_col1.z,frame_col2.z);
+        //frame_col2 = normalize(p1-p0);
+        //frame_col1 = cross((p2-p1),frame_col2);
+        //frame_col0 = cross(frame_col1,frame_col2);
+        frame = set(frame_col0,frame_col1,frame_col2);
+        return frame;
+}
+
+vector computeDarbouxVector(matrix3 d0,d1 ; float midedgelength ; matrix3 permutation)
+{
+    vector darboux_vector ;
+    float factor  = 1.0 + dot(matrix3_col(d0,0),matrix3_col(d1,0))
+                        + dot(matrix3_col(d0,1),matrix3_col(d1,1))
+                        + dot(matrix3_col(d0,2),matrix3_col(d1,2)) ;
+    factor = 2.0 /( factor*midedgelength );
+    for (int c = 0; c < 3; ++c)
+        {
+                int i = getcomp(permutation ,c , 0);
+                int j = getcomp(permutation ,c , 1);
+                int k = getcomp(permutation ,c , 2);
+                float temp = dot(matrix3_col(d0,j),matrix3_col(d1,k)) - dot(matrix3_col(d0,k),matrix3_col(d1,j));
+                setcomp(darboux_vector,temp,i); 
+        }
+     darboux_vector *= factor;
+     return darboux_vector;
+    
+    
+}
+
+
+
+
