@@ -31,6 +31,31 @@ void update_BallJoint(vector  x0 , x1 ;
                         ballJointInfo[3] = rot1T * (ballJointPosition[1] - x1) + x1;
                        
                     }
+
+
+
+void DistanceConstraint( vector  p0, p1 ; 
+                    float invMass0, invMass1;
+                    float  restLength;
+                    float compressionStiffness, stretchStiffness;
+                    vector corr0, corr1)
+        {                               
+                float wSum = invMass0 + invMass1;
+                vector n = p1 - p0;
+                float d = length(n);
+                 n  = normalize(n);
+                
+                vector corr;
+                if (d < restLength)
+                        corr = compressionStiffness * n * (d - restLength) / wSum;
+                else
+                        corr = stretchStiffness * n * (d - restLength) / wSum;
+        
+                corr0 =  invMass0 * corr;
+                corr1 = -invMass1 * corr;
+                
+        }
+        
 /*
 void solve_BallJoint(vector  x0 , x1 ;
 		     float  invMass0 , invMass1;
